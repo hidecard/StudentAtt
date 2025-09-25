@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YHA Attendance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body { font-family: Arial, sans-serif; padding:20px; }
+    .card { background:#f9f9f9; padding:20px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.1); }
+    input, button { padding:10px; margin:5px 0; width:100%; }
+  </style>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwbjSe4C5NeYzNEwqLs3_EuIE97JXAvAmLfQlMzPgAxjAwADUFd0c3zCMvo09gracvs/exec"; // <-- replace with Apps Script deployment URL
+    const TOKEN = "abcd1234";
+
+    async function initApp() {
+      const studentId = localStorage.getItem("student_id");
+
+      if (studentId) {
+        // Already logged in → auto send attendance
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ student: studentId, token: TOKEN })
+        });
+        const data = await res.json();
+        if (data.status === "ok") {
+          document.getElementById("msg").innerText =
+            `Attendance Recorded ✅\nStudent: ${data.student} (${data.name})`;
+        } else {
+          document.getElementById("msg").innerText = "Error: " + data.msg;
+        }
+      } else {
+        // First time login → show form
+        document.getElementById("loginForm").style.display = "block";
+      }
+    }
+
+    function login() {
+      const id = document.getElementById("student_id").value;
+
+      if (id) {
+        localStorage.setItem("student_id", id);
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("msg").innerText =
+          "Login success 🎉. Scan QR again to record attendance.";
+      } else {
+        alert("Please enter Student ID");
+      }
+    }
+  </script>
+</head>
+<body onload="initApp()">
+  <h2>📚 YHA Attendance System</h2>
+  <div id="msg">Loading...</div>
+
+  <div id="loginForm" class="card" style="display:none;">
+    <h3>First-time Login</h3>
+    <input id="student_id" placeholder="Student ID (e.g. YHA0001)">
+    <button onclick="login()">Login</button>
+  </div>
+</body>
+</html>
