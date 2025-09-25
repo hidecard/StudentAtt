@@ -12,7 +12,7 @@
   </style>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwbjSe4C5NeYzNEwqLs3_EuIE97JXAvAmLfQlMzPgAxjAwADUFd0c3zCMvo09gracvs/exec"; // <-- replace with Apps Script deployment URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbwGMNteEoSyxs0AlRQfG81YlMk-xVmB5fQG-gH6XKZ3sRbqQ2KlyBG83JCAfPfxiHba/exec"; // Replace with Apps Script URL
     const TOKEN = "abcd1234";
 
     async function initApp() {
@@ -20,27 +20,30 @@
 
       if (studentId) {
         // Already logged in → auto send attendance
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ student: studentId, token: TOKEN })
-        });
-        const data = await res.json();
-        if (data.status === "ok") {
-          document.getElementById("msg").innerText =
-            `Attendance Recorded ✅\nStudent: ${data.student} (${data.name})`;
-        } else {
-          document.getElementById("msg").innerText = "Error: " + data.msg;
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ student: studentId, token: TOKEN })
+          });
+          const data = await res.json();
+          if (data.status === "ok") {
+            document.getElementById("msg").innerText =
+              `Attendance Recorded ✅\nStudent: ${data.student} (${data.name})`;
+          } else {
+            document.getElementById("msg").innerText = "Error: " + data.msg;
+          }
+        } catch(err) {
+          document.getElementById("msg").innerText = "Error: Cannot reach API";
+          console.error(err);
         }
       } else {
-        // First time login → show form
         document.getElementById("loginForm").style.display = "block";
       }
     }
 
     function login() {
-      const id = document.getElementById("student_id").value;
-
+      const id = document.getElementById("student_id").value.trim();
       if (id) {
         localStorage.setItem("student_id", id);
         document.getElementById("loginForm").style.display = "none";
@@ -53,7 +56,7 @@
   </script>
 </head>
 <body onload="initApp()">
-  <h2>📚 YHA Attendance System</h2>
+  <h2>YHA Attendance System</h2>
   <div id="msg">Loading...</div>
 
   <div id="loginForm" class="card" style="display:none;">
